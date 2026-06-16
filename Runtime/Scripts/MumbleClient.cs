@@ -1,4 +1,4 @@
-﻿using MumbleProto;
+using MumbleProto;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -108,6 +108,9 @@ namespace Mumble
         // The mute that we're waiting to set
         // Either null, true, or false
         private bool? _pendingMute = null;
+        // The deaf that we're waiting to set
+        // Either null, true, or false
+        private bool? _pendingDeaf = null;
 
         private readonly DebugValues _debugValues;
         // TODO there are data structures that would be a lot faster here
@@ -435,6 +438,10 @@ namespace Mumble
             if (_pendingMute.HasValue)
                 SetSelfMute(_pendingMute.Value);
             _pendingMute = null;
+
+            if (_pendingDeaf.HasValue)
+                SetSelfDeaf(_pendingDeaf.Value);
+            _pendingDeaf = null;
         }
 
         internal void RemoveUser(uint removedUserSession)
@@ -672,9 +679,11 @@ namespace Mumble
                 ChannelId = channel.ChannelId,
                 Actor = OurUserState.Session,
                 Session = OurUserState.Session,
-                SelfMute = (_pendingMute != null) ? _pendingMute.Value : OurUserState.SelfMute
+                SelfMute = (_pendingMute != null) ? _pendingMute.Value : OurUserState.SelfMute,
+                SelfDeaf = (_pendingDeaf != null) ? _pendingDeaf.Value : OurUserState.SelfDeaf
             };
             _pendingMute = null;
+            _pendingDeaf = null;
 
             Debug.Log("Attempting to join channel Id: " + state.ChannelId);
             _tcpConnection.SendMessage(MessageType.UserState, state);
@@ -901,6 +910,24 @@ namespace Mumble
             }
 
             return currentBest;
+        }
+
+        public void SetSelfDeaf(bool status)
+        {
+            if (OurUserState == null
+                || !ConnectionSetupFinished)
+            {
+                _pendingDeaf = status;
+                return;
+            }
+            _pendingDeaf = null;
+
+            UserState state = new()
+            {
+                SelfDeaf = status
+            };
+            OurUserState.SelfDeaf = status;
+            _tcpConnection.SendMessage(MessageType.UserState, state);
         }
     }
 }
