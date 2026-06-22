@@ -52,7 +52,7 @@ Or you can [setup your own Mumble server](https://wiki.mumble.info/wiki/Installi
      "scopedRegistries": [
     {
       "name": "Unity NuGet",
-      "url": "https://unitynuget-registry.azurewebsites.net",
+      "url": "https://unitynuget-registry.openupm.com",
       "scopes": [
         "org.nuget"
       ]
